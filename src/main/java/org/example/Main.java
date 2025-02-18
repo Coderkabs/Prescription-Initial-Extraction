@@ -22,11 +22,8 @@ import java.util.Properties;
 public class Main {
     public static void main(String[] args) throws Exception {
         System.out.println("Processing.......");
-
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
         String topic = "prescriptions";
-
         FlinkKafkaConsumer<String> kafkaConsumer = Consumer.createKafkaConsumer(topic);
         DataStream<String> kafkaStream = env.addSource(kafkaConsumer);
         DataStream<PrescriptionAckRecord> prescriptionAckStream = kafkaStream.map(new MapFunction<String, PrescriptionAckRecord>() {
@@ -47,14 +44,12 @@ public class Main {
                 return new PrescriptionAckRecord(msh.path("hmisCode").asText(), extractedPayload);
             }
         });
-
         Properties producerProperties = new Properties();
         producerProperties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "154.120.216.119:9093,102.23.123.251:9093,102.23.120.153:9093");
         producerProperties.setProperty(ProducerConfig.ACKS_CONFIG, "all");
         producerProperties.setProperty(ProducerConfig.RETRIES_CONFIG, "3");
         producerProperties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         producerProperties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
-
         producerProperties.setProperty("security.protocol", "SASL_PLAINTEXT");
         producerProperties.setProperty("sasl.mechanism", "SCRAM-SHA-256");
         producerProperties.setProperty("sasl.jaas.config", "org.apache.kafka.common.security.scram.ScramLoginModule required "
